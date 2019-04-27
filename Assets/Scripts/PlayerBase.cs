@@ -138,7 +138,7 @@ public class PlayerBase : MonoBehaviour
     public void InputHandle()
     {
         //Control Jumping
-        if (Input.GetButtonDown("Jump") && onGround())
+        if (Input.GetButtonDown("Jump") && (onGround() || staircased))
         {
             gravVel.y = (jheight * Physics.gravity.y * -2);
         }
