@@ -34,6 +34,6 @@ public class PlayerController : PlayerBase
         UpdateAnimatorParameters();
         Move();
         UpdatePhysics();
-        debugt.text = (Mathf.Rad2Deg * Mathf.Atan2(hitNormal.y, hitNormal.x)).ToString();
+        //debugt.text = Grounded.ToString();
     }
 }

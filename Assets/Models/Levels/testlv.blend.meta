@@ -1,14 +1,63 @@
 fileFormatVersion: 2
-guid: 49106d0f210f13143b862777039eead2
+guid: fdbf6284e648db4458094fe43f7b80e0
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: //RootNode
-    400000: //RootNode
-    2100000: No Name
-    2300000: //RootNode
-    3300000: //RootNode
-    4300000: Cube
+    100000: L_Platformo
+    100002: P3
+    100004: P4
+    100006: Platform1
+    100008: Platform2
+    100010: Slopes
+    100012: //RootNode
+    100014: L_Platformo_001
+    100016: Staircase
+    100018: Staircase_001
+    100020: Staircase_002
+    400000: L_Platformo
+    400002: P3
+    400004: P4
+    400006: Platform1
+    400008: Platform2
+    400010: Slopes
+    400012: //RootNode
+    400014: L_Platformo_001
+    400016: Staircase
+    400018: Staircase_001
+    400020: Staircase_002
+    2100000: unnamed
+    2300000: L_Platformo
+    2300002: P3
+    2300004: P4
+    2300006: Platform1
+    2300008: Platform2
+    2300010: Slopes
+    2300012: L_Platformo_001
+    2300014: Staircase
+    2300016: Staircase_001
+    2300018: Staircase_002
+    3300000: L_Platformo
+    3300002: P3
+    3300004: P4
+    3300006: Platform1
+    3300008: Platform2
+    3300010: Slopes
+    3300012: L_Platformo_001
+    3300014: Staircase
+    3300016: Staircase_001
+    3300018: Staircase_002
+    4300000: L_Platformo
+    4300002: Platform1
+    4300004: Slopes
+    4300006: Platform2
+    4300008: P4
+    4300010: P3
+    4300012: Staircase_002
+    4300014: Staircase_001
+    4300016: L_Platformo_001
+    4300018: Staircase
+    7400000: Default Take
+    9500000: //RootNode
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -62,7 +111,7 @@ ModelImporter:
     secondaryUVPackMargin: 4
     useFileScale: 1
     previousCalculatedGlobalScale: 1
-    hasPreviousCalculatedGlobalScale: 0
+    hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -71,7 +120,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 0
+  importAnimation: 1
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
@@ -89,7 +138,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 2
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

@@ -142,14 +142,16 @@ public class PlayerBase : MonoBehaviour
 
     public void Move()
     {
-        //Here's what happens if we're not grounded: our movement will be governed by the slope we're
-        //supposedly standing on
+        /* Here's what happens if we're not grounded: our movement will be governed by the slope we're
+        supposedly standing on
         if (!onGround() && !acceptableSlope)
         {
             move.x += (1f - hitNormal.y) * hitNormal.x * (slopeSpd - slopeFrc);
             move.z += (1f - hitNormal.y) * hitNormal.z * (slopeSpd - slopeFrc);
         }
-
+        Disabling this for now
+        I really don't want to deal with this and so far it will not be necessary for me.
+        */
         //Now we move
         _controller.Move(move * Time.deltaTime * spd);
     }
