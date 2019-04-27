@@ -726,6 +726,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: testlv
       objectReference: {fileID: 0}
+    - target: {fileID: 100012, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100014, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100004, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100006, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100008, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100010, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100016, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100018, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 100020, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: fdbf6284e648db4458094fe43f7b80e0, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -877,11 +917,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_Layer
-      value: 2
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 100012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 20.4
+      value: 20.97
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_LocalPosition.y
@@ -889,7 +933,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.7
+      value: -82.97
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_LocalRotation.x
@@ -978,13 +1022,13 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 2.61
-  m_Radius: 0.27
+  m_Height: 3.24
+  m_Radius: 0.5
   m_SlopeLimit: 55
   m_StepOffset: 0.34
-  m_SkinWidth: 0.01
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 1.25, z: 0}
+  m_SkinWidth: 0.0001
+  m_MinMoveDistance: 0
+  m_Center: {x: 0, y: 1.5, z: 0}
 --- !u!114 &1715660287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -997,6 +1041,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b440ffa655fc3c40b565aeed56f4ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _raycastDistance: 1.7
   drag: {x: 0, y: 0, z: 0}
   debugt: {fileID: 2071229819}
 --- !u!1 &1834022843 stripped

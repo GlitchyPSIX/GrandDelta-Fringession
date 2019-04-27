@@ -32,8 +32,8 @@ public class PlayerController : PlayerBase
         UpdateAxes();
         InputHandle();
         UpdateAnimatorParameters();
-        Move();
         UpdatePhysics();
+        Move();
         //debugt.text = Grounded.ToString();
     }
 }

@@ -30,6 +30,12 @@ public class PlayerBase : MonoBehaviour
     public float Speed { get { return spd; } set { spd = value; } }
 
     bool acceptableSlope;
+    bool grounded;
+    bool staircased;
+
+    public float _raycastDistance;
+    RaycastHit rayhit;
+    RaycastHit rayhit_s;
 
     float horz;
     float vert;
@@ -52,10 +58,13 @@ public class PlayerBase : MonoBehaviour
          In case we were not on a slope and we're, indeed, floating somewhere
          we slide down said slope later in the code.
         */
-        return (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit) && Physics.CheckCapsule(GetComponent<Collider>().bounds.center,
+
+        return grounded;
+
+        /* return (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit) && Physics.CheckCapsule(GetComponent<Collider>().bounds.center,
             new Vector3(GetComponent<Collider>().bounds.center.x,
             GetComponent<Collider>().bounds.min.y - collidersep, GetComponent<Collider>().bounds.center.z),
-             0.18f);
+             0.72f); */
     }
 
     public void OnControllerColliderHit(ControllerColliderHit hit)
@@ -67,6 +76,8 @@ public class PlayerBase : MonoBehaviour
 
     public void UpdateAxes()
     {
+        Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance);
+        Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), Color.black);
         horz = Input.GetAxis("Horizontal");
         vert = Input.GetAxis("Vertical");
 
@@ -101,7 +112,7 @@ public class PlayerBase : MonoBehaviour
     {
         //Set Animator parameters
         anm.SetFloat("Speed", Vector3.ClampMagnitude(move, 1).magnitude);
-        anm.SetBool("isGrounded", onGround());
+        anm.SetBool("isGrounded", onGround() || staircased);
         anm.SetFloat("vertMomentum", gravVel.y);
     }
 
@@ -113,7 +124,11 @@ public class PlayerBase : MonoBehaviour
         //Restore gravity if grounded
         if (onGround() && gravVel.y < 0)
         {
+            if (staircased)
+            {
             gravVel.y = 0;
+            }
+            
         }
 
         //Gravity goes before any other movement
@@ -152,7 +167,25 @@ public class PlayerBase : MonoBehaviour
         Disabling this for now
         I really don't want to deal with this and so far it will not be necessary for me.
         */
+
         //Now we move
         _controller.Move(move * Time.deltaTime * spd);
+        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance))
+        {
+            grounded = true;
+        }
+        else
+        {
+            grounded = false;
+        }
+
+        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), out rayhit_s, _raycastDistance * 1.5f))
+        {
+            staircased = true;
+        }
+        else
+        {
+            staircased = false;
+        }
     }
 }
