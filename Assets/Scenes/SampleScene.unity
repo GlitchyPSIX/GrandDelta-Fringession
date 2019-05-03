@@ -1022,13 +1022,13 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 3.24
-  m_Radius: 0.5
+  m_Height: 4.31
+  m_Radius: 1
   m_SlopeLimit: 55
-  m_StepOffset: 0.6
+  m_StepOffset: 0.5
   m_SkinWidth: 0.0001
   m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 1.5, z: 0}
+  m_Center: {x: 0, y: 2.17, z: 0}
 --- !u!114 &1715660287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1041,7 +1041,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b440ffa655fc3c40b565aeed56f4ac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _raycastDistance: 1.7
+  _raycastDistance: 2.5
   drag: {x: 0, y: 0, z: 0}
   debugt: {fileID: 2071229819}
 --- !u!1 &1834022843 stripped

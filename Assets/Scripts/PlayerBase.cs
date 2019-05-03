@@ -26,8 +26,17 @@ public class PlayerBase : MonoBehaviour
     float slopeSpd;
     public float SlopeSlideSpeed { get { return slopeSpd; } set { slopeSpd = value; } }
 
+    float currSpd;
     float spd;
-    public float Speed { get { return spd; } set { spd = value; } }
+    public float Speed { get { return spd; } private set { } }
+
+    float baseSpd;
+    public float BaseSpeed { get { return baseSpd; } set { baseSpd = value; } }
+
+    
+
+    float maxSpd;
+    public float MaxSpeed { get { return maxSpd; } set { maxSpd = value; } }
 
     bool acceptableSlope;
     bool grounded;
@@ -111,7 +120,7 @@ public class PlayerBase : MonoBehaviour
     public void UpdateAnimatorParameters()
     {
         //Set Animator parameters
-        anm.SetFloat("Speed", Vector3.ClampMagnitude(move, 1).magnitude);
+        anm.SetFloat("Speed", Vector3.ClampMagnitude(move, 1).magnitude * (spd/10));
         anm.SetBool("isGrounded", onGround() || staircased);
         anm.SetFloat("vertMomentum", gravVel.y);
     }
@@ -135,12 +144,30 @@ public class PlayerBase : MonoBehaviour
         _controller.Move(gravVel * Time.deltaTime);
     }
 
+    public void Jump()
+    {
+        gravVel.y = (jheight * Physics.gravity.y * -2);
+    }
+
     public void InputHandle()
     {
         //Control Jumping
         if (Input.GetButtonDown("Jump") && (onGround() || staircased))
         {
-            gravVel.y = (jheight * Physics.gravity.y * -2);
+            Jump();
+        }
+
+        if(Input.GetButton("Run") && (onGround() || staircased))
+        {
+            spd = Mathf.SmoothDamp(spd, maxSpd, ref currSpd, 0.1f);
+        }
+        else if (!Input.GetButton("Run") && !(onGround() || staircased))
+        {
+            spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 2f);
+        }
+        else if (!Input.GetButton("Run"))
+        {
+            spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 0.1f);
         }
 
         //If we're touching any axis
@@ -170,7 +197,27 @@ public class PlayerBase : MonoBehaviour
 
         //Now we move
         _controller.Move(move * Time.deltaTime * spd);
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance))
+        checkGrounded();
+    }
+
+    private void Update()
+    {
+        performUpdate();
+    }
+
+    public virtual void performUpdate()
+    {
+        //Debug.DrawLine(GetComponent<Collider>().bounds.center, new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y - collidersep, GetComponent<Collider>().bounds.center.z), Color.white, 1);
+        UpdateAxes();
+        InputHandle();
+        UpdateAnimatorParameters();
+        UpdatePhysics();
+        Move();
+    }
+
+    public void checkGrounded()
+    {
+        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance) && acceptableSlope)
         {
             grounded = true;
         }
@@ -179,7 +226,7 @@ public class PlayerBase : MonoBehaviour
             grounded = false;
         }
 
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), out rayhit_s, _raycastDistance * 1.5f))
+        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
         {
             staircased = true;
         }

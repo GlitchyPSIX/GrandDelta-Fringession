@@ -16,24 +16,17 @@ public class PlayerController : PlayerBase
     {
         _controller = GetComponent<CharacterController>();
         anm = GetComponent<Animator>();
-        Speed = 10;
+        BaseSpeed = 10;
+        MaxSpeed = 30;
         SlopeFriction = 2;
         SlopeSlideSpeed = 6;
         ColliderSeparation = 0;
         JumpHeight = 0.8f;
     }
 
-    
-
-    private void Update()
+    override public void performUpdate()
     {
-        
-        //Debug.DrawLine(GetComponent<Collider>().bounds.center, new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y - collidersep, GetComponent<Collider>().bounds.center.z), Color.white, 1);
-        UpdateAxes();
-        InputHandle();
-        UpdateAnimatorParameters();
-        UpdatePhysics();
-        Move();
-        //debugt.text = Grounded.ToString();
+        base.performUpdate();
+        debugt.text = Speed.ToString();
     }
 }
