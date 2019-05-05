@@ -41,6 +41,7 @@ public class PlayerBase : MonoBehaviour
     bool acceptableSlope;
     bool grounded;
     bool staircased;
+    bool walking;
 
     public float _raycastDistance;
     RaycastHit rayhit;
@@ -123,6 +124,7 @@ public class PlayerBase : MonoBehaviour
         anm.SetFloat("Speed", Vector3.ClampMagnitude(move, 1).magnitude * (spd/10));
         anm.SetBool("isGrounded", onGround() || staircased);
         anm.SetFloat("vertMomentum", gravVel.y);
+        anm.SetBool("isWalking", walking);
     }
 
     public void UpdatePhysics()
@@ -131,13 +133,9 @@ public class PlayerBase : MonoBehaviour
         gravVel.y += Physics.gravity.y * 2 * Time.deltaTime;
 
         //Restore gravity if grounded
-        if (onGround() && gravVel.y < 0)
+        if (grounded && gravVel.y < 0)
         {
-            if (staircased)
-            {
-            gravVel.y = 0;
-            }
-            
+            gravVel.y = 0;         
         }
 
         //Gravity goes before any other movement
@@ -174,11 +172,11 @@ public class PlayerBase : MonoBehaviour
         if (unfilteredMove.magnitude != 0)
         {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, Vector3.ClampMagnitude(unfilteredMove, 1).magnitude * 13);
-            anm.SetBool("isWalking", true);
+            walking = true;
         }
         else
         {
-            anm.SetBool("isWalking", false);
+            walking = false;
         }
     }
 
@@ -217,14 +215,16 @@ public class PlayerBase : MonoBehaviour
 
     public void checkGrounded()
     {
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance) && acceptableSlope)
+        /* if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance) && acceptableSlope)
         {
-            grounded = true;
+            grounded = _controller.isGrounded;
         }
         else
         {
-            grounded = false;
-        }
+            grounded = _controller.isGrounded;
+        } */
+
+        grounded = _controller.isGrounded;
 
         if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
         {
