@@ -686,8 +686,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45f530d1e787bc842863484f0647121f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  continueButton: {fileID: 1692756403}
   speed: 0.005
+  continueButton: {fileID: 1692756403}
 --- !u!114 &1054155001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -993,9 +993,20 @@ MonoBehaviour:
   dialog:
     title: Talk Test
     captions:
-    - This is a test to check how the dialogs would work.
-    - The layout itself is not final, it's just a placeholder.
-    - There's meant to be animations as well.
+    - 'This is a <b>test</b> to check how the dialogs would work.
+
+      This <i>includes</i> <b>formatting!</b>'
+    - The layout itself is not final, it's just a <i>placeholder</i>.
+    - <i>We're almost done with the basics!</i>
+    - =Delta>Hold up lemme change name real quick
+    - =Delta>This is definitely a step up from my previous attempts at making any
+      sort of UI
+    - =Talk Test>Oh really
+    - =Delta>
+    - Yeah, like... <i>I can now actually do some fancy stuff with this modular dialog
+      system</i>
+    - =Talk Test>Oh I see
+    - =Talk Test>OK
 --- !u!114 &1317166882
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -2,18 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
+using System.Text;
 
-public class DialogTypewriter : MonoBehaviour
+public class DialogTypewriter : Typewriter
 {
 
     public Button continueButton;
-
-    public float speed = 0.005f;
-    internal string fulltext;
-    internal string currenttext;
-
-    internal Text visibleText;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -22,22 +16,23 @@ public class DialogTypewriter : MonoBehaviour
         visibleText.text = currenttext;
     }
 
-    virtual public void startTypewriter()
+    public void blankTypewriter()
     {
         continueButton.interactable = false;
         fulltext = visibleText.text;
         visibleText.text = currenttext;
+    }
+
+    override public void startTypewriter()
+    {
+        blankTypewriter();
         StartCoroutine(TypeWrite());
     }
 
-    virtual public IEnumerator TypeWrite()
+    override public IEnumerator TypeWrite()
     {
-        for (int i = 0; i < fulltext.Length + 1; i++)
-        {
-            currenttext = fulltext.Substring(0, i) + "<color=\"#0000\"> " + fulltext.Substring(i) + "</color>";
-            visibleText.text = currenttext;
-            yield return new WaitForSeconds(speed);
-        }
+        StartCoroutine(base.TypeWrite());
         continueButton.interactable = true;
+        yield return null;
     }
 }
