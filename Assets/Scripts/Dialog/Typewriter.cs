@@ -66,8 +66,8 @@ public class Typewriter : MonoBehaviour
                 {
                     repl = new Regex(_cTag);
                 }
-                Debug.Log(fulltext.Substring(0, i) + _cTag + "<color=\"#0000\"> " + (_cTag == "" ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>");
-                currenttext = fulltext.Substring(0, i) + _cTag + "<color=\"#0000\"> " + (_cTag == "" ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>";
+                Debug.Log(fulltext.Substring(0, i) + _cTag + "<color=\"#0000\">" + (repl == null ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>");
+                currenttext = fulltext.Substring(0, i) + _cTag + "<color=\"#0000\">" + (repl == null ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>";
         visibleText.text = currenttext;
                 yield return new WaitForSeconds(speed);
             }
