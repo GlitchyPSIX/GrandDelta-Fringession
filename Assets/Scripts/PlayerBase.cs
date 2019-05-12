@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerBase : MonoBehaviour
 {
@@ -13,6 +14,13 @@ public class PlayerBase : MonoBehaviour
     /// and the ground.
     /// </summary>
     public float ColliderSeparation { get { return collidersep; } set { collidersep = value; } }
+
+    public enum ActionStates
+    {
+        NOTHING,
+        TALK,
+        INTERACT
+    }
 
     float angl;
     public float Angle { get { return angl; } set { } }
@@ -33,8 +41,6 @@ public class PlayerBase : MonoBehaviour
     float baseSpd;
     public float BaseSpeed { get { return baseSpd; } set { baseSpd = value; } }
 
-    
-
     float maxSpd;
     public float MaxSpeed { get { return maxSpd; } set { maxSpd = value; } }
 
@@ -46,6 +52,7 @@ public class PlayerBase : MonoBehaviour
     public float _raycastDistance;
     RaycastHit rayhit;
     RaycastHit rayhit_s;
+    RaycastHit rayhit_go;
 
     float horz;
     float vert;
@@ -59,6 +66,8 @@ public class PlayerBase : MonoBehaviour
     internal Vector3 hitNormal;
     internal Vector3 move;
     internal Vector3 unfilteredMove;
+
+    public Text debugtext;
 
     public bool onGround()
     {
@@ -84,8 +93,9 @@ public class PlayerBase : MonoBehaviour
         acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
     }
 
-    public void UpdateAxes()
+    public virtual void UpdateAxes()
     {
+        Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), Color.black);
         horz = Input.GetAxis("Horizontal");
@@ -114,8 +124,6 @@ public class PlayerBase : MonoBehaviour
         //Angle which we're pointing at
         angl = Mathf.Rad2Deg * Mathf.Atan2(move.x, move.z);
         rot = Quaternion.Euler(0, angl, 0);
-
-        
     }
 
     public void UpdateAnimatorParameters()
@@ -180,7 +188,7 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
-    public void Move()
+    public virtual void Move()
     {
         /* Here's what happens if we're not grounded: our movement will be governed by the slope we're
         supposedly standing on
@@ -205,25 +213,54 @@ public class PlayerBase : MonoBehaviour
 
     public virtual void performUpdate()
     {
-        //Debug.DrawLine(GetComponent<Collider>().bounds.center, new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y - collidersep, GetComponent<Collider>().bounds.center.z), Color.white, 1);
         UpdateAxes();
         InputHandle();
         UpdateAnimatorParameters();
         UpdatePhysics();
         Move();
+        checkInteraction();
+    }
+
+    public virtual void Interact()
+    {
+
+    }
+
+    public virtual ActionStates ReturnActionState()
+    {
+        return ActionStates.NOTHING;
+    }
+
+    public GameObject checkInteraction()
+    {
+        PlayerBase ast = null;
+        Physics.Raycast(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.7f), out rayhit_go, _raycastDistance * 1f);
+        if (rayhit_go.collider != null && rayhit_go.collider.gameObject.GetComponent<PlayerBase>() != null)
+        {
+            ast = rayhit_go.collider.GetComponent<PlayerBase>();
+        }
+        if (ast != null)
+        {
+            Debug.Log("AAAAAAA");
+            if (ast.ReturnActionState() != ActionStates.NOTHING)
+            {
+                Debug.Log("Ops");
+                debugtext.text = ast.ReturnActionState().ToString();
+                return rayhit_go.collider.gameObject;
+            }
+            else
+            {
+                return null;
+            }
+        } else
+        {
+            return null;
+        }
+        
     }
 
     public void checkGrounded()
     {
-        /* if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance, out rayhit, _raycastDistance) && acceptableSlope)
-        {
-            grounded = _controller.isGrounded;
-        }
-        else
-        {
-            grounded = _controller.isGrounded;
-        } */
-
         grounded = _controller.isGrounded;
 
         if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
