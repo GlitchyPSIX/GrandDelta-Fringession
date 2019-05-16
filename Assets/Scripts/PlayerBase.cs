@@ -7,6 +7,7 @@ public class PlayerBase : MonoBehaviour
 {
     internal CharacterController _controller;
     internal Animator anm;
+    private bool _npc = false;
 
     float collidersep;
     /// <summary>
@@ -15,53 +16,48 @@ public class PlayerBase : MonoBehaviour
     /// </summary>
     public float ColliderSeparation { get { return collidersep; } set { collidersep = value; } }
 
-    public enum ActionStates
-    {
-        NOTHING,
-        TALK,
-        INTERACT
-    }
-
     float angl;
     public float Angle { get { return angl; } set { } }
-    Quaternion rot;
+    private Quaternion rot;
 
-    Vector3 gravVel;
+    private Vector3 gravVel;
 
-    float slopeFrc;
+    private float slopeFrc;
     public float SlopeFriction { get { return slopeFrc; } set { slopeFrc = value; } }
 
-    float slopeSpd;
+    private float slopeSpd;
     public float SlopeSlideSpeed { get { return slopeSpd; } set { slopeSpd = value; } }
 
-    float currSpd;
-    float spd;
+    private float currSpd;
+    private float spd;
     public float Speed { get { return spd; } private set { } }
 
-    float baseSpd;
+    private float baseSpd;
     public float BaseSpeed { get { return baseSpd; } set { baseSpd = value; } }
 
-    float maxSpd;
+    private float maxSpd;
     public float MaxSpeed { get { return maxSpd; } set { maxSpd = value; } }
 
-    bool acceptableSlope;
-    bool grounded;
-    bool staircased;
-    bool walking;
+    private bool acceptableSlope;
+    private bool grounded;
+    private bool staircased;
+    private bool walking;
 
     public float _raycastDistance;
-    RaycastHit rayhit;
-    RaycastHit rayhit_s;
-    RaycastHit rayhit_go;
+    private RaycastHit rayhit;
+    private RaycastHit rayhit_s;
+    private RaycastHit rayhit_go;
 
-    float horz;
-    float vert;
+    private float horz;
+    private float vert;
 
-    float pureHorz;
-    float pureVert;
+    private float pureHorz;
+    private float pureVert;
 
     float jheight;
     public float JumpHeight { get { return jheight; } set { jheight = value; } }
+
+    public bool NPC { get => _npc; set => _npc = value; }
 
     internal Vector3 hitNormal;
     internal Vector3 move;
@@ -157,34 +153,46 @@ public class PlayerBase : MonoBehaviour
 
     public void InputHandle()
     {
-        //Control Jumping
-        if (Input.GetButtonDown("Jump") && (onGround() || staircased))
+        if (!_npc)
         {
-            Jump();
-        }
+            //Control Jumping
+            if (Input.GetButtonDown("Jump") && (onGround() || staircased))
+            {
+                Jump();
+            }
 
-        if(Input.GetButton("Run") && (onGround() || staircased))
-        {
-            spd = Mathf.SmoothDamp(spd, maxSpd, ref currSpd, 0.1f);
-        }
-        else if (!Input.GetButton("Run") && !(onGround() || staircased))
-        {
-            spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 2f);
-        }
-        else if (!Input.GetButton("Run"))
-        {
-            spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 0.1f);
-        }
+            if (Input.GetButton("Run") && (onGround() || staircased))
+            {
+                spd = Mathf.SmoothDamp(spd, maxSpd, ref currSpd, 0.1f);
+            }
+            else if (!Input.GetButton("Run") && !(onGround() || staircased))
+            {
+                spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 2f);
+            }
+            else if (!Input.GetButton("Run"))
+            {
+                spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 0.1f);
+            }
 
-        //If we're touching any axis
-        if (unfilteredMove.magnitude != 0)
-        {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, Vector3.ClampMagnitude(unfilteredMove, 1).magnitude * 13);
-            walking = true;
-        }
-        else
-        {
-            walking = false;
+            if (Input.GetButtonDown("Interact") && (onGround() || staircased))
+            {
+                GameObject interactable = checkInteraction();
+                if (interactable != null)
+                {
+                    interactable.GetComponent<InteractableNPC>().Interaction();
+                }
+            }
+
+            //If we're touching any axis
+            if (unfilteredMove.magnitude != 0)
+            {
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, Vector3.ClampMagnitude(unfilteredMove, 1).magnitude * 13);
+                walking = true;
+            }
+            else
+            {
+                walking = false;
+            }
         }
     }
 
@@ -221,35 +229,24 @@ public class PlayerBase : MonoBehaviour
         checkInteraction();
     }
 
-    public virtual void Interact()
-    {
-
-    }
-
-    public virtual ActionStates ReturnActionState()
-    {
-        return ActionStates.NOTHING;
-    }
-
     public GameObject checkInteraction()
     {
-        PlayerBase ast = null;
+        InteractableNPC ast = null;
         Physics.Raycast(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.7f), out rayhit_go, _raycastDistance * 1f);
-        if (rayhit_go.collider != null && rayhit_go.collider.gameObject.GetComponent<PlayerBase>() != null)
+        if (rayhit_go.collider != null && rayhit_go.collider.gameObject.GetComponent<InteractableNPC>() != null)
         {
-            ast = rayhit_go.collider.GetComponent<PlayerBase>();
+            ast = rayhit_go.collider.GetComponent<InteractableNPC>();
         }
         if (ast != null)
         {
-            Debug.Log("AAAAAAA");
-            if (ast.ReturnActionState() != ActionStates.NOTHING)
+            if (ast.ReturnActionState() != InteractableNPC.ActionStates.NOTHING)
             {
-                Debug.Log("Ops");
                 debugtext.text = ast.ReturnActionState().ToString();
                 return rayhit_go.collider.gameObject;
             }
             else
             {
+                debugtext.text = InteractableNPC.ActionStates.NOTHING.ToString();
                 return null;
             }
         } else

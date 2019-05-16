@@ -9,6 +9,7 @@ public class DialogManager : MonoBehaviour
     public Text dialogTText;
     public Text dialogText;
     public DialogTypewriter tw;
+    public Animator anm;
 
     Queue<string> sentences;
 
@@ -24,6 +25,11 @@ public class DialogManager : MonoBehaviour
     public void StartDialog(Dialog dialog)
     {
         Debug.Log("Working: Starting Dialog with title: " + dialog.title);
+        anm.SetBool("Done", false);
+        anm.Play("Enter");
+        anm.SetBool("Displaying", false);
+
+            Start();
 
         dialogTText.text = dialog.title;
 
@@ -33,7 +39,9 @@ public class DialogManager : MonoBehaviour
         {
             sentences.Enqueue(sentence);
         }
-
+        tw.blankTypewriter();
+        anm.SetBool("Done", false);
+        anm.SetBool("Displaying", true);
         NextSentence();
     }
 
@@ -96,6 +104,7 @@ public class DialogManager : MonoBehaviour
 
     public void EndDialog()
     {
+        anm.SetBool("Displaying", false);
         Debug.Log("Finished dialog");
     }
 

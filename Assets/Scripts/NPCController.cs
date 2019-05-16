@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NPC1 : PlayerBase
+public class NPCController : PlayerBase
 {
-    
-
+    // Start is called before the first frame update
     void Start()
     {
+        NPC = true;
         _controller = GetComponent<CharacterController>();
-        anm = GetComponent<Animator>();
         BaseSpeed = 10;
         MaxSpeed = 30;
         SlopeFriction = 2;
@@ -22,22 +21,9 @@ public class NPC1 : PlayerBase
     {
         UpdateAxes();
         InputHandle();
+        // UpdateAnimatorParameters();
         UpdatePhysics();
         Move();
-    }
-
-    public override void Move()
-    {
-        // Don't
-    }
-
-    public override ActionStates ReturnActionState()
-    {
-        return ActionStates.TALK;
-    }
-
-    public override void Interact()
-    {
-        Debug.Log("Ding");
+        checkInteraction();
     }
 }

@@ -31,7 +31,7 @@ public class DialogTypewriter : Typewriter
 
     override public IEnumerator TypeWrite()
     {
-        StartCoroutine(base.TypeWrite());
+        yield return StartCoroutine(base.TypeWrite());
         continueButton.interactable = true;
         yield return null;
     }
