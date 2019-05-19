@@ -16,6 +16,7 @@ public class DialogManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        tw.Status = DialogTypewriter.TypewriterStatus.INACTIVE;
         sentences = new Queue<string>();   
     }
     /// <summary>
@@ -24,6 +25,7 @@ public class DialogManager : MonoBehaviour
     /// <param name="dialog">The dialog to start</param>
     public void StartDialog(Dialog dialog)
     {
+        tw.Status = DialogTypewriter.TypewriterStatus.IDLE;
         Debug.Log("Working: Starting Dialog with title: " + dialog.title);
         anm.SetBool("Done", false);
         anm.Play("Enter");
@@ -43,6 +45,22 @@ public class DialogManager : MonoBehaviour
         anm.SetBool("Done", false);
         anm.SetBool("Displaying", true);
         NextSentence();
+    }
+
+    private void Update()
+    {
+     if (Input.GetButtonDown("Interact") && tw.Status == DialogTypewriter.TypewriterStatus.IDLE)
+        {
+            NextSentence();
+        }
+            if (Input.GetButtonDown("Run"))
+            {
+                tw.speed = tw.maxspeed / 8;
+            }
+            else
+            {
+                tw.speed = tw.maxspeed;
+            }
     }
 
     /// <summary>
@@ -105,6 +123,7 @@ public class DialogManager : MonoBehaviour
     public void EndDialog()
     {
         anm.SetBool("Displaying", false);
+        tw.Status = DialogTypewriter.TypewriterStatus.INACTIVE;
         Debug.Log("Finished dialog");
     }
 

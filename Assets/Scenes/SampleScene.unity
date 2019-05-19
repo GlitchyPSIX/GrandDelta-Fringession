@@ -674,18 +674,18 @@ Camera:
   m_SensorSize: {x: 36, y: 24}
   m_LensShift: {x: 0, y: 0}
   m_GateFitMode: 2
-  m_FocalLength: 50
+  m_FocalLength: 137509870
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
-  field of view: 60
+  field of view: 50
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -708,13 +708,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 5, z: 0}
+  m_LocalRotation: {x: 0.23911765, y: 0.3696438, z: -0.09904577, w: 0.89239913}
+  m_LocalPosition: {x: -3, y: 38, z: -108}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 30, y: 45, z: 0}
 --- !u!114 &534669906
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -727,14 +727,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb2d2a4d2b4a0844487fd992ddbef1fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followingObject: {fileID: 1436900890}
+  followingObject: {fileID: 1715660282}
   distanceZ: -9.09
   distanceY: 4.52
   angle: 17
+  previousXAngle: 0
+  previosYAngle: 0
+  targetXAngle: 0
+  targetYAngle: 17
   rotationAngle: 0
-  separation: -11
+  separation: -42.69
   horz_deg: 0
   ver_deg: 0
+  timer: 0
+  cameraMode: 0
 --- !u!1 &538846643 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100002, guid: fdbf6284e648db4458094fe43f7b80e0,
@@ -1198,7 +1204,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400012, guid: e0d9d57ebb90a9c4aa946a2c5bfef219, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1302,7 +1308,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!143 &1436900891
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1501,7 +1507,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: NaN, y: NaN}
   m_SizeDelta: {x: 0, y: 80.22}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &2071229819

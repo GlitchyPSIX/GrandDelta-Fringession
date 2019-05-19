@@ -7,10 +7,11 @@ using System.Text.RegularExpressions;
 
 public class Typewriter : MonoBehaviour
 {
+    public float maxspeed = 0.005f;
+    internal float speed = 0.005f;
 
-    public float speed = 0.005f;
-    internal string fulltext;
-    internal string currenttext;
+    protected string fulltext;
+    protected string currenttext;
 
     internal Text visibleText;
 
@@ -66,9 +67,8 @@ public class Typewriter : MonoBehaviour
                 {
                     repl = new Regex(_cTag);
                 }
-                Debug.Log(fulltext.Substring(0, i) + _cTag + "<color=\"#0000\">" + (repl == null ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>");
                 currenttext = fulltext.Substring(0, i) + _cTag + "<color=\"#0000\">" + (repl == null ? fulltext.Substring(i) : repl.Replace(fulltext.Substring(i), "", 1)) + "</color>";
-        visibleText.text = currenttext;
+                visibleText.text = currenttext;
                 yield return new WaitForSeconds(speed);
             }
             else

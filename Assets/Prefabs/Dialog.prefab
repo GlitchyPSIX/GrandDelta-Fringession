@@ -300,7 +300,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45f530d1e787bc842863484f0647121f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0.005
+  maxspeed: 0
   continueButton: {fileID: 5443050666391772457}
 --- !u!1 &5443050667425321052
 GameObject:
