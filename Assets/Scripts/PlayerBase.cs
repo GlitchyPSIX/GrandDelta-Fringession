@@ -43,6 +43,11 @@ public class PlayerBase : MonoBehaviour
     private bool staircased;
     private bool walking;
 
+    private float interactionTimer;
+    public float interactionLimit = 1f;
+
+    public bool Still { get; set; }
+
     public float _raycastDistance;
     private RaycastHit rayhit;
     private RaycastHit rayhit_s;
@@ -89,7 +94,7 @@ public class PlayerBase : MonoBehaviour
         acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
     }
 
-    public virtual void UpdateAxes()
+    public virtual void UpdateAxes(bool useExternal = false, float _horz = 0, float _vert = 0)
     {
         Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance);
@@ -106,7 +111,15 @@ public class PlayerBase : MonoBehaviour
         Vector3 moveZ_pure = pureHorz * Camera.main.transform.right;
         Vector3 moveX_pure = pureVert * Camera.main.transform.forward;
 
-        move = movez + movex;
+        if (useExternal == false)
+        {
+            move = movez + movex;
+        }
+        else
+        {
+            move = _horz * Vector3.one + _vert * Vector3.one;
+        }
+       
         //We don't really want to adjust the Y value as that's gonna be governed by physics
         move = new Vector3(move.x, 0, move.z);
 
@@ -179,7 +192,7 @@ public class PlayerBase : MonoBehaviour
                 GameObject interactable = checkInteraction();
                 if (interactable != null)
                 {
-                    interactable.GetComponent<InteractableNPC>().Interaction();
+                    interactable.GetComponent<InteractableNPC>().Action();
                 }
             }
 
@@ -216,13 +229,28 @@ public class PlayerBase : MonoBehaviour
 
     private void Update()
     {
+        if (interactionTimer < interactionLimit)
+        {
+        interactionTimer += Time.deltaTime;
+        }
         performUpdate();
+
+    }
+
+    public void ResetInteractionTimer()
+    {
+        interactionTimer = 0;
     }
 
     public virtual void performUpdate()
     {
-        UpdateAxes();
-        InputHandle();
+        
+        if (!Still && interactionTimer >= interactionLimit)
+        {
+            UpdateAxes();
+            InputHandle();
+        }
+        
         UpdateAnimatorParameters();
         UpdatePhysics();
         Move();
@@ -239,9 +267,9 @@ public class PlayerBase : MonoBehaviour
         }
         if (ast != null)
         {
-            if (ast.ReturnActionState() != InteractableNPC.ActionStates.NOTHING)
+            if (ast.Interaction != InteractableNPC.ActionStates.NOTHING)
             {
-                debugtext.text = ast.ReturnActionState().ToString();
+                debugtext.text = ast.Interaction.ToString();
                 return rayhit_go.collider.gameObject;
             }
             else

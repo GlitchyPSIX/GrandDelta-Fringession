@@ -25,6 +25,11 @@ public class DialogManager : MonoBehaviour
     /// <param name="dialog">The dialog to start</param>
     public void StartDialog(Dialog dialog)
     {
+        if (FindObjectOfType<PlayerBase>() != null)
+        {
+            FindObjectOfType<PlayerBase>().Still = true;
+        }
+        FindObjectOfType<PlayerBase>().UpdateAxes(true);
         tw.Status = DialogTypewriter.TypewriterStatus.IDLE;
         Debug.Log("Working: Starting Dialog with title: " + dialog.title);
         anm.SetBool("Done", false);
@@ -125,6 +130,8 @@ public class DialogManager : MonoBehaviour
         anm.SetBool("Displaying", false);
         tw.Status = DialogTypewriter.TypewriterStatus.INACTIVE;
         Debug.Log("Finished dialog");
+        FindObjectOfType<PlayerBase>().ResetInteractionTimer();
+        FindObjectOfType<PlayerBase>().Still = false;
     }
 
 }

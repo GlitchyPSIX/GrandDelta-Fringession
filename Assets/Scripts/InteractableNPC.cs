@@ -3,30 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class InteractableNPC : MonoBehaviour
+public abstract class InteractableNPC : MonoBehaviour
 {
-
-    public void Start()
-    {
-    }
-
     public enum ActionStates
     {
         NOTHING,
         TALK,
         INTERACT
     }
+    public abstract ActionStates Interaction { get; set; }
+    public abstract string Name { get; set; }
 
-    public ActionStates interaction;
-    public string _name;
-
-    public ActionStates ReturnActionState()
-    {
-        return interaction;
-    }
-
-    public virtual void Interaction()
-    {
-    
-    }
+    public abstract void Action();
 }
