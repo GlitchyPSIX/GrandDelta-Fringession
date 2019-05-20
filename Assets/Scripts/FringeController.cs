@@ -27,6 +27,5 @@ public class FringeController : PlayerBase
     override public void performUpdate()
     {
         base.performUpdate();
-        debugt.text = Speed.ToString();
     }
 }

@@ -46,6 +46,9 @@ public class PlayerBase : MonoBehaviour
     private float interactionTimer;
     public float interactionLimit = 1f;
 
+    private float poundTimer;
+    public float poundTimerLimit = 1f;
+
     public bool Still { get; set; }
 
     public float _raycastDistance;
@@ -63,6 +66,13 @@ public class PlayerBase : MonoBehaviour
     public float JumpHeight { get { return jheight; } set { jheight = value; } }
 
     public bool NPC { get => _npc; set => _npc = value; }
+
+    public enum PoundStatus
+    {
+        NOT, PREPARE, FALLING
+    }
+
+    PoundStatus poundPhase = PoundStatus.NOT;
 
     internal Vector3 hitNormal;
     internal Vector3 move;
@@ -96,7 +106,8 @@ public class PlayerBase : MonoBehaviour
 
     public virtual void UpdateAxes(bool useExternal = false, float _horz = 0, float _vert = 0)
     {
-        Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
+        
+            Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), Color.black);
         horz = Input.GetAxis("Horizontal");
@@ -111,28 +122,43 @@ public class PlayerBase : MonoBehaviour
         Vector3 moveZ_pure = pureHorz * Camera.main.transform.right;
         Vector3 moveX_pure = pureVert * Camera.main.transform.forward;
 
-        if (useExternal == false)
+        if (poundPhase == PoundStatus.NOT)
         {
-            move = movez + movex;
+            if (useExternal == false)
+            {
+                move = movez + movex;
+            }
+            else
+            {
+                move = _horz * Vector3.one + _vert * Vector3.one;
+            }
+            //We don't really want to adjust the Y value as that's gonna be governed by physics
+            move = new Vector3(move.x, 0, move.z);
+
+            /* variable move uses GetAxis, which is smoothed out in case of using keys
+               unfilteredMove is essentially this but without the smoothing GetAxis has
+               We use this to immediatly check the amount of power the stick is held by so
+               we rotate at the correct speed
+            */
+
+            if (useExternal == false)
+            {
+                unfilteredMove = moveZ_pure + moveX_pure;
+            }
+            else
+            {
+                unfilteredMove = _horz * Vector3.one + _vert * Vector3.one;
+            }
+
+            //Angle which we're pointing at
+            angl = Mathf.Rad2Deg * Mathf.Atan2(move.x, move.z);
+            rot = Quaternion.Euler(0, angl, 0);
         }
         else
         {
-            move = _horz * Vector3.one + _vert * Vector3.one;
+            move = Vector3.zero;
+            unfilteredMove = Vector3.zero;
         }
-       
-        //We don't really want to adjust the Y value as that's gonna be governed by physics
-        move = new Vector3(move.x, 0, move.z);
-
-        /* variable move uses GetAxis, which is smoothed out in case of using keys
-           unfilteredMove is essentially this but without the smoothing GetAxis has
-           We use this to immediatly check the amount of power the stick is held by so
-           we rotate at the correct speed
-        */
-        unfilteredMove = moveZ_pure + moveX_pure;
-
-        //Angle which we're pointing at
-        angl = Mathf.Rad2Deg * Mathf.Atan2(move.x, move.z);
-        rot = Quaternion.Euler(0, angl, 0);
     }
 
     public void UpdateAnimatorParameters()
@@ -156,7 +182,14 @@ public class PlayerBase : MonoBehaviour
         }
 
         //Gravity goes before any other movement
-        _controller.Move(gravVel * Time.deltaTime);
+        if (poundPhase != PoundStatus.PREPARE)
+        {
+            _controller.Move(gravVel * Time.deltaTime);
+        }
+        else
+        {
+            gravVel.y += Physics.gravity.y * 8 * Time.deltaTime;
+        }
     }
 
     public void Jump()
@@ -185,6 +218,16 @@ public class PlayerBase : MonoBehaviour
             else if (!Input.GetButton("Run"))
             {
                 spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 0.1f);
+            }
+
+            if (Input.GetButtonDown("Pound") && !(onGround() || staircased) && poundPhase == PoundStatus.NOT)
+            {
+                anm.SetBool("isPounding", true);
+                move = Vector3.zero;
+                gravVel = Vector3.zero;
+                anm.Play("Groundpound");
+                poundPhase = PoundStatus.PREPARE;
+                poundTimer = 0;
             }
 
             if (Input.GetButtonDown("Interact") && (onGround() || staircased))
@@ -223,18 +266,27 @@ public class PlayerBase : MonoBehaviour
         */
 
         //Now we move
-        _controller.Move(move * Time.deltaTime * spd);
+        if (poundPhase != PoundStatus.PREPARE)
+        {
+            _controller.Move(move * Time.deltaTime * spd);
+        }
         checkGrounded();
     }
 
     private void Update()
     {
+        debugtext.text = poundPhase.ToString() + "\n" + poundTimer + "\n" + interactionTimer.ToString();
         if (interactionTimer < interactionLimit)
         {
         interactionTimer += Time.deltaTime;
         }
-        performUpdate();
 
+        
+        performUpdate();
+        if (poundTimer < poundTimerLimit)
+        {
+            poundTimer += Time.deltaTime;
+        }
     }
 
     public void ResetInteractionTimer()
@@ -269,12 +321,10 @@ public class PlayerBase : MonoBehaviour
         {
             if (ast.Interaction != InteractableNPC.ActionStates.NOTHING)
             {
-                debugtext.text = ast.Interaction.ToString();
                 return rayhit_go.collider.gameObject;
             }
             else
             {
-                debugtext.text = InteractableNPC.ActionStates.NOTHING.ToString();
                 return null;
             }
         } else
@@ -287,6 +337,18 @@ public class PlayerBase : MonoBehaviour
     public void checkGrounded()
     {
         grounded = _controller.isGrounded;
+
+        if (poundTimer >= poundTimerLimit && poundPhase == PoundStatus.PREPARE)
+        {
+            poundPhase = PoundStatus.FALLING;
+        }
+
+        if (poundPhase == PoundStatus.FALLING && (onGround() || staircased))
+        {
+            poundPhase = PoundStatus.NOT;
+            anm.SetBool("isPounding", false);
+            Camera.main.GetComponent<CharacterCam>().setShake(14, 0.2f, 0.89f, Shaker.ShakeStyle.Y, true);
+        }
 
         if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
         {
