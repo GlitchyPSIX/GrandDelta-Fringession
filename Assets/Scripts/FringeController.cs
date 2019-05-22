@@ -14,6 +14,7 @@ public class FringeController : PlayerBase
 
     void Start()
     {
+        MaxHP = 4;
         _controller = GetComponent<CharacterController>();
         anm = GetComponent<Animator>();
         BaseSpeed = 10;
@@ -22,6 +23,7 @@ public class FringeController : PlayerBase
         SlopeSlideSpeed = 6;
         ColliderSeparation = 0;
         JumpHeight = 0.8f;
+        Heal(5);
     }
 
     override public void performUpdate()

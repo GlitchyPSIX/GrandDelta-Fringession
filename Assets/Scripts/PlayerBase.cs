@@ -38,6 +38,10 @@ public class PlayerBase : MonoBehaviour
     private float maxSpd;
     public float MaxSpeed { get { return maxSpd; } set { maxSpd = value; } }
 
+    private int _hp;
+    public int HP { get { return _hp; } private set { } }
+    public int MaxHP { get; set; }
+
     private bool acceptableSlope;
     private bool grounded;
     private bool staircased;
@@ -49,6 +53,10 @@ public class PlayerBase : MonoBehaviour
     private float poundTimer;
     public float poundTimerLimit = 1f;
 
+    private float invinciTimer;
+    public float invinciTimerLimit = 3f;
+
+    public bool Invincible { get; set; }
     public bool Still { get; set; }
 
     public float _raycastDistance;
@@ -72,6 +80,18 @@ public class PlayerBase : MonoBehaviour
         NOT, PREPARE, FALLING
     }
 
+    public enum TauntStatus
+    {
+        NONE, DANCE, PRAISE
+    }
+
+    public enum HurtStatus
+    {
+        ALIVE, HURT, DEAD
+    }
+
+    TauntStatus tauntStatus = TauntStatus.NONE;
+    HurtStatus hurtStatus = HurtStatus.ALIVE;
     PoundStatus poundPhase = PoundStatus.NOT;
 
     internal Vector3 hitNormal;
@@ -100,6 +120,10 @@ public class PlayerBase : MonoBehaviour
     public void OnControllerColliderHit(ControllerColliderHit hit)
     {
         //Determine the direction the slope is going to
+        if (hit.gameObject.tag == "Hurt" && hurtStatus == HurtStatus.ALIVE && invinciTimer >= invinciTimerLimit)
+        {
+            Hurt();
+        }
         hitNormal = hit.normal;
         acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
     }
@@ -107,7 +131,7 @@ public class PlayerBase : MonoBehaviour
     public virtual void UpdateAxes(bool useExternal = false, float _horz = 0, float _vert = 0)
     {
         
-            Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
+        Debug.DrawRay(GetComponent<Collider>().bounds.center, transform.forward * (_raycastDistance * 1.5f), Color.red);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * _raycastDistance);
         Debug.DrawRay(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.5f), Color.black);
         horz = Input.GetAxis("Horizontal");
@@ -122,7 +146,7 @@ public class PlayerBase : MonoBehaviour
         Vector3 moveZ_pure = pureHorz * Camera.main.transform.right;
         Vector3 moveX_pure = pureVert * Camera.main.transform.forward;
 
-        if (poundPhase == PoundStatus.NOT)
+        if (poundPhase == PoundStatus.NOT && hurtStatus != HurtStatus.DEAD)
         {
             if (useExternal == false)
             {
@@ -168,6 +192,12 @@ public class PlayerBase : MonoBehaviour
         anm.SetBool("isGrounded", onGround() || staircased);
         anm.SetFloat("vertMomentum", gravVel.y);
         anm.SetBool("isWalking", walking);
+        anm.SetInteger("hurtStatus", (int)hurtStatus);
+        anm.SetInteger("tauntStatus", (int)tauntStatus);
+        if (walking)
+        {
+            tauntStatus = TauntStatus.NONE;
+        }
     }
 
     public void UpdatePhysics()
@@ -182,19 +212,27 @@ public class PlayerBase : MonoBehaviour
         }
 
         //Gravity goes before any other movement
-        if (poundPhase != PoundStatus.PREPARE)
+        if (hurtStatus != HurtStatus.DEAD)
         {
-            _controller.Move(gravVel * Time.deltaTime);
-        }
-        else
-        {
-            gravVel.y += Physics.gravity.y * 8 * Time.deltaTime;
+            if (poundPhase != PoundStatus.PREPARE)
+            {
+                _controller.Move(gravVel * Time.deltaTime);
+            }
+            else
+            {
+                gravVel.y += Physics.gravity.y * 8 * Time.deltaTime;
+            }
         }
     }
 
     public void Jump()
     {
         gravVel.y = (jheight * Physics.gravity.y * -2);
+    }
+
+    public void JumpSmall()
+    {
+        gravVel.y = ((jheight/2) * Physics.gravity.y * -2);
     }
 
     public void InputHandle()
@@ -239,6 +277,11 @@ public class PlayerBase : MonoBehaviour
                 }
             }
 
+            if (Input.GetButtonDown("Taunt") && (onGround() || staircased))
+            {
+                anm.Play("Taunt");
+            }
+
             //If we're touching any axis
             if (unfilteredMove.magnitude != 0)
             {
@@ -249,6 +292,29 @@ public class PlayerBase : MonoBehaviour
             {
                 walking = false;
             }
+        }
+    }
+
+    public void Necromancy(bool kill = false)
+    {
+        if (!kill)
+        {
+            _hp = 4;
+            interactionTimer = 0;
+            hurtStatus = HurtStatus.ALIVE;
+            tauntStatus = TauntStatus.NONE;
+        }
+        else
+        {
+            if (hurtStatus == HurtStatus.DEAD)
+            {
+                Die();
+            }
+            else
+            {
+                Debug.Log("Cannot kill the dead!");
+            }
+            
         }
     }
 
@@ -266,7 +332,7 @@ public class PlayerBase : MonoBehaviour
         */
 
         //Now we move
-        if (poundPhase != PoundStatus.PREPARE)
+        if (poundPhase != PoundStatus.PREPARE && hurtStatus != HurtStatus.DEAD)
         {
             _controller.Move(move * Time.deltaTime * spd);
         }
@@ -278,7 +344,21 @@ public class PlayerBase : MonoBehaviour
         debugtext.text = poundPhase.ToString() + "\n" + poundTimer + "\n" + interactionTimer.ToString();
         if (interactionTimer < interactionLimit)
         {
-        interactionTimer += Time.deltaTime;
+            interactionTimer += Time.deltaTime;
+        }
+
+        if (interactionTimer >= interactionLimit && hurtStatus == HurtStatus.HURT)
+        {
+            hurtStatus = HurtStatus.ALIVE;
+        }
+        else if (interactionTimer < interactionLimit && hurtStatus == HurtStatus.HURT)
+        {
+            hurtStatus = HurtStatus.HURT;
+        }
+
+        if (invinciTimer < invinciTimerLimit && hurtStatus == HurtStatus.ALIVE)
+        {
+            invinciTimer += Time.deltaTime;
         }
 
         
@@ -307,6 +387,49 @@ public class PlayerBase : MonoBehaviour
         UpdatePhysics();
         Move();
         checkInteraction();
+    }
+
+    public void Heal(int amount)
+    {
+        _hp += amount;
+        if (_hp > MaxHP)
+        {
+            _hp = MaxHP;
+        }
+        FindObjectOfType<Healthbar>().GetComponent<Healthbar>().changeHP(false);
+    }
+
+    public void Hurt()
+    {
+        if (HP > 1)
+        {
+            Camera.main.GetComponent<CharacterCam>().setShake(20, 0.4f, 0.8f, Shaker.ShakeStyle.Y);
+            anm.Play("Hurt");
+            move = -move;
+            Debug.Log("Hurt!");
+            JumpSmall();
+            hurtStatus = HurtStatus.HURT;
+            invinciTimer = 0;
+            interactionTimer = 0;
+            _hp--;
+        }
+        else
+        {
+            _hp--;
+            Die();
+        }
+        FindObjectOfType<Healthbar>().GetComponent<Healthbar>().changeHP(true);
+        
+    }
+
+    public void Die()
+    {
+        hurtStatus = HurtStatus.DEAD;
+        Camera.main.GetComponent<CharacterCam>().setShake(20, 0.6f, 0.8f, Shaker.ShakeStyle.RADIUS);
+        anm.Play("Dead");
+        move = Vector3.zero;
+        gravVel = Vector3.zero;
+        Debug.Log("Dead!");
     }
 
     public GameObject checkInteraction()
