@@ -15,6 +15,8 @@ public class Timeline : MonoBehaviour
     double pastRevolution;
     public float snap;
 
+    public List<Beatdriven> beatObjects;
+
     public double nextbeat;
 
     void Start()
@@ -22,8 +24,9 @@ public class Timeline : MonoBehaviour
         beatmultiplier = 1f;
         beatdur = (60 / GetComponent<Conductor>().bpm);
         conductor = GetComponent<Conductor>();
-        snap = 0.125f;
+        snap = 1f;
         nextbeat += beatdur * beatmultiplier;
+        beatObjects.AddRange(FindObjectsOfType<Beatdriven>());
     }
 
     void Update()
@@ -33,20 +36,22 @@ public class Timeline : MonoBehaviour
 
         if (GetComponent<Conductor>().songposition + offset > pastbeat + (beatdur * beatmultiplier))
         {
-            
+            foreach (Beatdriven bdriven in beatObjects)
+            {
+                bdriven.onBeat(beatcount);
+            }
+            pastbeat += beatdur * beatmultiplier;
+            nextbeat += beatdur * beatmultiplier;
         }
-        if (Input.GetKeyDown("a"))
-        {
-            //pause and unpause
-            AudioListener.pause = !AudioListener.pause;
-        }
+    }
 
-        if (Input.GetKeyDown("q") && AudioListener.pause == true)
-        {
-            //start song
-            StartCoroutine(conductor.resetBeatmap());
+    public void StartSong()
+    {
+        //start song
+        conductor.pitch = 1;
+        conductor.resetStartOfSong(false);
+        conductor.resetBeatmap();
             AudioListener.pause = false;
-        }
     }
 
     public void updateNextBeat(string reason = "")

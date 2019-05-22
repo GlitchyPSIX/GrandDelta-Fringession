@@ -22,6 +22,9 @@ public class PlayerBase : MonoBehaviour
 
     private Vector3 gravVel;
 
+    private Vector3 checkpoint;
+    protected Vector3 spawnpoint;
+
     private float slopeFrc;
     public float SlopeFriction { get { return slopeFrc; } set { slopeFrc = value; } }
 
@@ -119,13 +122,28 @@ public class PlayerBase : MonoBehaviour
 
     public void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        if (hit.gameObject.tag == "Checkpoint")
+        {
+            checkpoint = hit.point;
+        }
+        else
+        {
+
+        }
+
+
         //Determine the direction the slope is going to
         if (hit.gameObject.tag == "Hurt" && hurtStatus == HurtStatus.ALIVE && invinciTimer >= invinciTimerLimit)
         {
             Hurt();
         }
+
+        
         hitNormal = hit.normal;
         acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
+
+        
+        
     }
 
     public virtual void UpdateAxes(bool useExternal = false, float _horz = 0, float _vert = 0)
@@ -239,6 +257,12 @@ public class PlayerBase : MonoBehaviour
     {
         if (!_npc)
         {
+            if (Input.GetButtonDown("Interact") && hurtStatus == HurtStatus.DEAD)
+            {
+                Necromancy(false);
+                Respawn(false, false);
+            }
+
             //Control Jumping
             if (Input.GetButtonDown("Jump") && (onGround() || staircased))
             {
@@ -299,7 +323,7 @@ public class PlayerBase : MonoBehaviour
     {
         if (!kill)
         {
-            _hp = 4;
+            Heal(MaxHP);
             interactionTimer = 0;
             hurtStatus = HurtStatus.ALIVE;
             tauntStatus = TauntStatus.NONE;
@@ -455,6 +479,27 @@ public class PlayerBase : MonoBehaviour
             return null;
         }
         
+    }
+
+    public void Respawn(bool atCheckpoint = true, bool hurt = true)
+    {
+        move = Vector3.zero;
+        gravVel = Vector3.zero;
+        if (hurt)
+        {
+            Hurt();
+        }
+        _controller.enabled = false;
+        if (atCheckpoint)
+        {
+           
+            transform.position = checkpoint;
+        }
+        else
+        {
+            transform.position = spawnpoint;
+        }
+        _controller.enabled = true;
     }
 
     public void checkGrounded()

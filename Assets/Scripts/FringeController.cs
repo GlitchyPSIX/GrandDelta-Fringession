@@ -24,6 +24,7 @@ public class FringeController : PlayerBase
         ColliderSeparation = 0;
         JumpHeight = 0.8f;
         Heal(5);
+        spawnpoint = transform.position;
     }
 
     override public void performUpdate()
