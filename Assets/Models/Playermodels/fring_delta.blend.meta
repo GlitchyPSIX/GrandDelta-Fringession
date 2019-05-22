@@ -78,6 +78,9 @@ ModelImporter:
     400070: upper_arm_L
     400072: upper_arm_R
     2100000: unnamed
+    2100002: Body
+    2100004: Body__FTEX_png
+    2100006: None__FTEX_png
     4300000: Right_Arm
     4300002: Left_Arm
     4300004: Left_Foot
@@ -106,7 +109,17 @@ ModelImporter:
     13700008: Right_Foot
     13700010: Torso
     2186277476908879412: ImportLogs
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Body__FTEX_png
+    second: {fileID: 2100000, guid: dcb317fbb71a1654299ab8d9f2c8d0be, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: None__FTEX_png
+    second: {fileID: 2100000, guid: dcb317fbb71a1654299ab8d9f2c8d0be, type: 2}
   materials:
     importMaterials: 1
     materialName: 0

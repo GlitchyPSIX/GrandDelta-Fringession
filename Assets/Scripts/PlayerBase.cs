@@ -101,8 +101,6 @@ public class PlayerBase : MonoBehaviour
     internal Vector3 move;
     internal Vector3 unfilteredMove;
 
-    public Text debugtext;
-
     public bool onGround()
     {
         /* We determine if the character is on ground by checking if
@@ -365,7 +363,6 @@ public class PlayerBase : MonoBehaviour
 
     private void Update()
     {
-        debugtext.text = poundPhase.ToString() + "\n" + poundTimer + "\n" + interactionTimer.ToString();
         if (interactionTimer < interactionLimit)
         {
             interactionTimer += Time.deltaTime;

@@ -9,9 +9,6 @@ public class FringeController : PlayerBase
 
     public Vector3 drag;
 
-    public Text debugt;
-    
-
     void Start()
     {
         MaxHP = 4;

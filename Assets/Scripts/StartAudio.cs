@@ -6,6 +6,14 @@ public class StartAudio : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        FindObjectOfType<Timeline>().StartSong();
+        if (AudioListener.pause)
+        {
+            FindObjectOfType<Timeline>().StartSong();
+            FindObjectOfType<LayeredAudioSource>().SetSampleVolume(0, 1);
+            FindObjectOfType<LayeredAudioSource>().SetSampleVolume(1, 1);
+            FindObjectOfType<LayeredAudioSource>().SetSampleVolume(2, 1);
+            FindObjectOfType<LayeredAudioSource>().SetSampleVolume(3, 1);
+        }
+        
     }
 }
