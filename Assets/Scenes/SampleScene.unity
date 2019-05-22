@@ -868,10 +868,13 @@ MonoBehaviour:
   targetXAngle: 0
   targetYAngle: 17
   rotationAngle: 0
-  separation: -42.69
+  separation: 0
   horz_deg: 0
   ver_deg: 0
+  fpsSeparation: -25
+  isoSeparation: -50
   timer: 0
+  rotTimer: 0
   camTimer: 0
   frequency: 0
   magnitude: 0

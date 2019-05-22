@@ -20,9 +20,17 @@ public class CharacterCam : MonoBehaviour
     public float targetXAngle;
     public float targetYAngle;
     public float rotationAngle;
+
+    private float prevSeparation;
     public float separation;
+    float targetSeparation;
+
     public float horz_deg;
     public float ver_deg;
+
+    public float fpsSeparation;
+    public float isoSeparation;
+
     public enum CamMode
     {
         FPS, ISO
@@ -40,6 +48,12 @@ public class CharacterCam : MonoBehaviour
     
     public CamMode cameraMode;
 
+    private void Start()
+    {
+        targetSeparation = isoSeparation;
+        changeCameraType();
+    }
+
     private void Update()
     {
         timer += Time.deltaTime;
@@ -48,6 +62,7 @@ public class CharacterCam : MonoBehaviour
         {
             changeCameraType();
         }
+        checkInput();
         previospos = transform.position;
         previosYAngle = angle;
         previousXAngle = rotationAngle; 
@@ -55,6 +70,7 @@ public class CharacterCam : MonoBehaviour
 
     public void changeCameraType()
     {
+        prevSeparation = separation;
         previospos = transform.position;
         previosYAngle = angle;
         previousXAngle = rotationAngle;
@@ -62,9 +78,87 @@ public class CharacterCam : MonoBehaviour
         rotTimer = 0;
         if (cameraMode == CamMode.FPS)
         {
+            cameraMode = CamMode.ISO;
             Camera.main.orthographic = true;
             targetYAngle = 30;
             targetXAngle = 0.75f;
+            targetSeparation = isoSeparation;
+        }
+        else if (cameraMode == CamMode.ISO)
+        {
+            cameraMode = CamMode.FPS;
+            Camera.main.orthographic = false;
+            targetYAngle = 30;
+            targetXAngle = 0;
+            targetSeparation = fpsSeparation;
+        }
+    }
+
+    private void checkInput()
+    {
+        if (cameraMode == CamMode.ISO)
+        {
+            if (Input.GetButtonDown("CamLeft"))
+            {
+                //Resetting the angle back
+                if (rotationAngle > Mathf.PI * 2)
+                {
+                    rotationAngle = 0.75f;
+                    targetXAngle = 0.75f + Mathf.PI / 2;
+                }
+                else
+                {
+                    targetXAngle += Mathf.PI / 2;
+                }
+                rotTimer = 0;
+
+            }
+            if (Input.GetButtonDown("CamRight"))
+            {
+                //Resetting the angle back
+                if (rotationAngle - 0.75f < Mathf.PI * -2)
+                {
+                    rotationAngle = -0.75f;
+                    targetXAngle = -0.75f - Mathf.PI / 2;
+                }
+                else
+                {
+                    targetXAngle -= Mathf.PI / 2;
+                }
+
+                rotTimer = 0;
+            }
+        }
+        {
+            if (cameraMode == CamMode.FPS)
+            {
+                if (Input.GetButton("CamLeft"))
+                {
+                    //Resetting the angle back
+                    if (rotationAngle > Mathf.PI * 2)
+                    {
+                        rotationAngle = 0;
+                        targetXAngle = 0.25f;
+                    }
+                    else
+                    {
+                        targetXAngle += 0.25f;
+                    }
+                }
+                if (Input.GetButton("CamRight"))
+                {
+                    //Resetting the angle back
+                    if (rotationAngle < Mathf.PI * -2)
+                    {
+                        rotationAngle = 0;
+                        targetXAngle = -0.25f;
+                    }
+                    else
+                    {
+                        targetXAngle -= 0.25f;
+                    }
+                }
+            }
         }
     }
 
@@ -73,6 +167,7 @@ public class CharacterCam : MonoBehaviour
         angle = Mathf.LerpAngle(previosYAngle, targetYAngle, timer);
         rotationAngle = Mathf.Lerp(previousXAngle, targetXAngle, rotTimer);
         rotationAround = new Vector3(Mathf.Sin(rotationAngle), 0, Mathf.Cos(rotationAngle));
+        separation = Mathf.Lerp(prevSeparation, targetSeparation, timer);
         horz_deg = -180 + Mathf.Rad2Deg * Mathf.Atan2((rotationAround.x * separation), (rotationAround.z * separation));
         originalpos = Vector3.Lerp(previospos, new Vector3(followingObject.transform.position.x + (rotationAround.x * separation), followingObject.transform.position.y + Mathf.Abs(separation)/2, followingObject.transform.position.z + (rotationAround.z * separation)), timer);
         transform.eulerAngles = new Vector3(angle, horz_deg, transform.eulerAngles.z);
@@ -101,43 +196,6 @@ public class CharacterCam : MonoBehaviour
         }
         transform.position = originalpos;
 
-        if (cameraMode != CamMode.ISO)
-        {
-            if (Input.GetKeyDown("q"))
-            {
-                //Resetting the angle back
-                if (rotationAngle > Mathf.PI * 2)
-                {
-                    rotationAngle = 0.75f;
-                    targetXAngle = 0.75f + Mathf.PI / 2;
-                }
-                else
-                {
-                    targetXAngle += Mathf.PI / 2;
-                }
-                rotTimer = 0;
-                
-            }
-            if (Input.GetKeyDown("e"))
-            {
-                //Resetting the angle back
-                if (rotationAngle - 0.75f < Mathf.PI * -2)
-                {
-                    rotationAngle = -0.75f;
-                    targetXAngle = -0.75f-Mathf.PI / 2;
-                }
-                else
-                {
-                    targetXAngle -= Mathf.PI / 2;
-                }
-                
-                rotTimer = 0;
-            }
-        }
-        else
-        {
-
-        }
     }
 
     public void setShake(float freq, float time, float amnt, Shaker.ShakeStyle shaketype, bool restart = true)
