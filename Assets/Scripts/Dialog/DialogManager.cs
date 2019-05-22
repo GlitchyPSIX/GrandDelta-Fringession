@@ -11,6 +11,8 @@ public class DialogManager : MonoBehaviour
     public DialogTypewriter tw;
     public Animator anm;
 
+    public GameObject NPC;
+
     Queue<string> sentences;
 
     // Start is called before the first frame update
@@ -23,12 +25,18 @@ public class DialogManager : MonoBehaviour
     /// Starts a dialog normally.
     /// </summary>
     /// <param name="dialog">The dialog to start</param>
-    public void StartDialog(Dialog dialog)
+    public void StartDialog(Dialog dialog, GameObject _npc = null)
     {
         if (FindObjectOfType<PlayerBase>() != null)
         {
             FindObjectOfType<PlayerBase>().Still = true;
         }
+
+        if (_npc != null)
+        {
+            NPC = _npc;
+        }
+
         FindObjectOfType<PlayerBase>().UpdateAxes(true);
         tw.Status = DialogTypewriter.TypewriterStatus.IDLE;
         Debug.Log("Working: Starting Dialog with title: " + dialog.title);
@@ -104,6 +112,28 @@ public class DialogManager : MonoBehaviour
             string subject = splitSubject[0];
             string followingText = splitSubject[1];
             dialogTText.text = subject.TrimStart('=');
+            if (followingText != "")
+            {
+                dialogText.text = followingText;
+                tw.startTypewriter();
+            }
+            else
+            {
+                currentSentence = sentences.Dequeue();
+                dialogText.text = currentSentence;
+                tw.startTypewriter();
+            }
+
+        }
+        else if (currentSentence.StartsWith("/"))
+        {
+            string[] splitSubject = currentSentence.Split('>');
+            string state = splitSubject[0].TrimStart('/');
+            string followingText = splitSubject[1];
+            if (NPC != null)
+            {
+                NPC.GetComponent<NPCController>().setAnimation(int.Parse(state));
+            }
             if (followingText != "")
             {
                 dialogText.text = followingText;

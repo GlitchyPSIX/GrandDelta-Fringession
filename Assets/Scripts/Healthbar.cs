@@ -18,11 +18,11 @@ public class Healthbar : MonoBehaviour
 
     private Image _healthImg;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        _healthImg = GetComponent<Image>();
         animator = GetComponent<Animator>();
         player = FindObjectOfType<PlayerBase>().gameObject;
-        _healthImg = GetComponent<Image>();
     }
 
     // Update is called once per frame

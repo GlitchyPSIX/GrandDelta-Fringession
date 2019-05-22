@@ -78,6 +78,7 @@ public class CharacterCam : MonoBehaviour
         rotTimer = 0;
         if (cameraMode == CamMode.FPS)
         {
+            Camera.main.nearClipPlane = -30f;
             cameraMode = CamMode.ISO;
             Camera.main.orthographic = true;
             targetYAngle = 30;
@@ -86,9 +87,10 @@ public class CharacterCam : MonoBehaviour
         }
         else if (cameraMode == CamMode.ISO)
         {
+            Camera.main.nearClipPlane = 0.01f;
             cameraMode = CamMode.FPS;
             Camera.main.orthographic = false;
-            targetYAngle = 30;
+            targetYAngle = 20;
             targetXAngle = 0;
             targetSeparation = fpsSeparation;
         }
@@ -138,11 +140,11 @@ public class CharacterCam : MonoBehaviour
                     if (rotationAngle > Mathf.PI * 2)
                     {
                         rotationAngle = 0;
-                        targetXAngle = 0.25f;
+                        targetXAngle = 0.10f;
                     }
                     else
                     {
-                        targetXAngle += 0.25f;
+                        targetXAngle += 0.10f;
                     }
                 }
                 if (Input.GetButton("CamRight"))
@@ -151,11 +153,11 @@ public class CharacterCam : MonoBehaviour
                     if (rotationAngle < Mathf.PI * -2)
                     {
                         rotationAngle = 0;
-                        targetXAngle = -0.25f;
+                        targetXAngle = -0.10f;
                     }
                     else
                     {
-                        targetXAngle -= 0.25f;
+                        targetXAngle -= 0.10f;
                     }
                 }
             }

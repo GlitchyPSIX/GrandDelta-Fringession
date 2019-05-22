@@ -11,6 +11,7 @@ public class FringeController : PlayerBase
 
     void Start()
     {
+        asrc = GetComponent<AudioSource>();
         MaxHP = 4;
         _controller = GetComponent<CharacterController>();
         anm = GetComponent<Animator>();

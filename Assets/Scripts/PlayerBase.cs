@@ -7,6 +7,10 @@ public class PlayerBase : MonoBehaviour
 {
     internal CharacterController _controller;
     internal Animator anm;
+    internal AudioSource asrc;
+
+    public AudioClip[] audioClips;
+
     private bool _npc = false;
 
     float collidersep;
@@ -46,8 +50,8 @@ public class PlayerBase : MonoBehaviour
     public int MaxHP { get; set; }
 
     private bool acceptableSlope;
-    private bool grounded;
-    private bool staircased;
+    protected bool grounded;
+    protected bool staircased;
     private bool walking;
 
     private float interactionTimer;
@@ -118,13 +122,13 @@ public class PlayerBase : MonoBehaviour
              0.72f); */
     }
 
-    public void OnControllerColliderHit(ControllerColliderHit hit)
+    void OnCollisionEnter(Collision hit)
     {
         if (hit.gameObject.tag == "Checkpoint")
         {
-            checkpoint = hit.point;
+            checkpoint = transform.position;
         }
-        else
+        else 
         {
 
         }
@@ -137,8 +141,8 @@ public class PlayerBase : MonoBehaviour
         }
 
         
-        hitNormal = hit.normal;
-        acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
+        //hitNormal = hit.normal;
+        //acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
 
         
         
@@ -412,6 +416,7 @@ public class PlayerBase : MonoBehaviour
 
     public void Heal(int amount)
     {
+        asrc.PlayOneShot(audioClips[2], 0.7f);
         _hp += amount;
         if (_hp > MaxHP)
         {
@@ -424,6 +429,7 @@ public class PlayerBase : MonoBehaviour
     {
         if (HP > 1)
         {
+            asrc.PlayOneShot(audioClips[0], 0.7f);
             Camera.main.GetComponent<CharacterCam>().setShake(20, 0.4f, 0.8f, Shaker.ShakeStyle.Y);
             anm.Play("Hurt");
             move = -move;
@@ -445,6 +451,7 @@ public class PlayerBase : MonoBehaviour
 
     public void Die()
     {
+        asrc.PlayOneShot(audioClips[1], 0.7f);
         hurtStatus = HurtStatus.DEAD;
         Camera.main.GetComponent<CharacterCam>().setShake(20, 0.6f, 0.8f, Shaker.ShakeStyle.RADIUS);
         anm.Play("Dead");
@@ -499,7 +506,7 @@ public class PlayerBase : MonoBehaviour
         _controller.enabled = true;
     }
 
-    public void checkGrounded()
+    public virtual void checkGrounded()
     {
         grounded = _controller.isGrounded;
 
@@ -510,6 +517,7 @@ public class PlayerBase : MonoBehaviour
 
         if (poundPhase == PoundStatus.FALLING && (onGround() || staircased))
         {
+            asrc.PlayOneShot(audioClips[3], 0.5f);
             poundPhase = PoundStatus.NOT;
             anm.SetBool("isPounding", false);
             Camera.main.GetComponent<CharacterCam>().setShake(14, 0.2f, 0.89f, Shaker.ShakeStyle.Y, true);

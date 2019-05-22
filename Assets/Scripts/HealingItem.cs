@@ -11,6 +11,7 @@ public class HealingItem : MonoBehaviour
         if (collision.gameObject.GetComponent<PlayerBase>() != null)
         {
             collision.gameObject.GetComponent<PlayerBase>().Heal(healAmount);
+            Destroy(gameObject);
         }
     }
 }

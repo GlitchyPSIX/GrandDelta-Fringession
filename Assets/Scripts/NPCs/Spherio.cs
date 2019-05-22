@@ -11,7 +11,7 @@ public class Spherio : InteractableNPC
 
     public override void Action()
     {
-        FindObjectOfType<DialogManager>().StartDialog(dialog);
+        FindObjectOfType<DialogManager>().StartDialog(dialog, this.gameObject);
     }
 
     // Start is called before the first frame update

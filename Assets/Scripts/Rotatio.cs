@@ -16,7 +16,6 @@ public class Rotatio : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        tr.Rotate(Vector3.forward, 10 * Time.deltaTime);
-        tr.Translate(Vector3.up * Time.deltaTime);
+        tr.Rotate(Vector3.forward, 30 * Time.deltaTime);
     }
 }
