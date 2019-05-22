@@ -28,6 +28,7 @@ public class CharacterCam : MonoBehaviour
         FPS, ISO
     }
     public float timer;
+    public float rotTimer;
     public float camTimer;
     float maxCamTimer = 0f;
 
@@ -42,6 +43,7 @@ public class CharacterCam : MonoBehaviour
     private void Update()
     {
         timer += Time.deltaTime;
+        rotTimer += Time.deltaTime;
         if (Input.GetKeyDown("r"))
         {
             changeCameraType();
@@ -57,6 +59,7 @@ public class CharacterCam : MonoBehaviour
         previosYAngle = angle;
         previousXAngle = rotationAngle;
         timer = 0;
+        rotTimer = 0;
         if (cameraMode == CamMode.FPS)
         {
             Camera.main.orthographic = true;
@@ -68,7 +71,7 @@ public class CharacterCam : MonoBehaviour
     private void LateUpdate()
     {
         angle = Mathf.LerpAngle(previosYAngle, targetYAngle, timer);
-        rotationAngle = Mathf.LerpAngle(previousXAngle, targetXAngle, timer);
+        rotationAngle = Mathf.Lerp(previousXAngle, targetXAngle, rotTimer);
         rotationAround = new Vector3(Mathf.Sin(rotationAngle), 0, Mathf.Cos(rotationAngle));
         horz_deg = -180 + Mathf.Rad2Deg * Mathf.Atan2((rotationAround.x * separation), (rotationAround.z * separation));
         originalpos = Vector3.Lerp(previospos, new Vector3(followingObject.transform.position.x + (rotationAround.x * separation), followingObject.transform.position.y + Mathf.Abs(separation)/2, followingObject.transform.position.z + (rotationAround.z * separation)), timer);
@@ -100,13 +103,35 @@ public class CharacterCam : MonoBehaviour
 
         if (cameraMode != CamMode.ISO)
         {
-            if (Input.GetKey("q"))
+            if (Input.GetKeyDown("q"))
             {
-                targetXAngle += 0.05f;
+                //Resetting the angle back
+                if (rotationAngle > Mathf.PI * 2)
+                {
+                    rotationAngle = 0.75f;
+                    targetXAngle = 0.75f + Mathf.PI / 2;
+                }
+                else
+                {
+                    targetXAngle += Mathf.PI / 2;
+                }
+                rotTimer = 0;
+                
             }
-            if (Input.GetKey("e"))
+            if (Input.GetKeyDown("e"))
             {
-                targetXAngle -= 0.05f;
+                //Resetting the angle back
+                if (rotationAngle - 0.75f < Mathf.PI * -2)
+                {
+                    rotationAngle = -0.75f;
+                    targetXAngle = -0.75f-Mathf.PI / 2;
+                }
+                else
+                {
+                    targetXAngle -= Mathf.PI / 2;
+                }
+                
+                rotTimer = 0;
             }
         }
         else
