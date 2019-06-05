@@ -52,6 +52,7 @@ public class PlayerBase : MonoBehaviour
     private bool acceptableSlope;
     protected bool grounded;
     protected bool staircased;
+    protected bool rayHitsGround;
     private bool walking;
 
     private float interactionTimer;
@@ -122,7 +123,7 @@ public class PlayerBase : MonoBehaviour
              0.72f); */
     }
 
-    void OnCollisionEnter(Collision hit)
+    void OnCollisionStay(Collision hit)
     {
         if (hit.gameObject.tag == "Checkpoint")
         {
@@ -146,6 +147,12 @@ public class PlayerBase : MonoBehaviour
 
         
         
+    }
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y, GetComponent<Collider>().bounds.center.z), 0.45f);
     }
 
     public virtual void UpdateAxes(bool useExternal = false, float _horz = 0, float _vert = 0)
@@ -226,7 +233,8 @@ public class PlayerBase : MonoBehaviour
         gravVel.y += Physics.gravity.y * 2 * Time.deltaTime;
 
         //Restore gravity if grounded
-        if (grounded && gravVel.y < 0)
+        if (((grounded || staircased) && !rayHitsGround)
+            && gravVel.y < 0)
         {
             gravVel.y = 0;         
         }
@@ -508,7 +516,27 @@ public class PlayerBase : MonoBehaviour
 
     public virtual void checkGrounded()
     {
-        grounded = _controller.isGrounded;
+        if (gravVel.y <= 0)
+        {
+            grounded = Physics.CheckSphere(new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y, GetComponent<Collider>().bounds.center.z), 0.10f, ~(1 << 10), QueryTriggerInteraction.Ignore);
+
+            if (Physics.CheckSphere(new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y, GetComponent<Collider>().bounds.center.z), 0.45f, ~(1 << 10), QueryTriggerInteraction.Ignore))
+            {
+                staircased = true;
+            }
+            else
+            {
+                staircased = false;
+            }
+
+            rayHitsGround = (Physics.Raycast(GetComponent<Collider>().bounds.center,
+                Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f));
+        }
+        else
+        {
+            grounded = false;
+            staircased = false;
+        }
 
         if (poundTimer >= poundTimerLimit && poundPhase == PoundStatus.PREPARE)
         {
@@ -523,13 +551,15 @@ public class PlayerBase : MonoBehaviour
             Camera.main.GetComponent<CharacterCam>().setShake(14, 0.2f, 0.89f, Shaker.ShakeStyle.Y, true);
         }
 
-        if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
+        /*if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
         {
             staircased = true;
         }
         else
         {
             staircased = false;
-        }
+        }*/
+
+        
     }
 }
