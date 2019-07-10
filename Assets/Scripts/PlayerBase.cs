@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class PlayerBase : MonoBehaviour
 {
@@ -13,13 +11,6 @@ public class PlayerBase : MonoBehaviour
 
     private bool _npc = false;
 
-    float collidersep;
-    /// <summary>
-    /// This is the separation between the base of the Capsule Collider that this player bears
-    /// and the ground.
-    /// </summary>
-    public float ColliderSeparation { get { return collidersep; } set { collidersep = value; } }
-
     float angl;
     public float Angle { get { return angl; } set { } }
     private Quaternion rot;
@@ -29,11 +20,13 @@ public class PlayerBase : MonoBehaviour
     private Vector3 checkpoint;
     protected Vector3 spawnpoint;
 
+    /*
     private float slopeFrc;
     public float SlopeFriction { get { return slopeFrc; } set { slopeFrc = value; } }
 
     private float slopeSpd;
     public float SlopeSlideSpeed { get { return slopeSpd; } set { slopeSpd = value; } }
+    */
 
     private float currSpd;
     private float spd;
@@ -68,9 +61,8 @@ public class PlayerBase : MonoBehaviour
     public bool Still { get; set; }
 
     public float _raycastDistance;
-    private RaycastHit rayhit;
-    private RaycastHit rayhit_s;
-    private RaycastHit rayhit_go;
+    private RaycastHit rayhit_s; //Raycast hit for Ground Check (Slopes, later)
+    private RaycastHit rayhit_go; //Raycast hit for Object Interaction
 
     private float horz;
     private float vert;
@@ -102,51 +94,36 @@ public class PlayerBase : MonoBehaviour
     HurtStatus hurtStatus = HurtStatus.ALIVE;
     PoundStatus poundPhase = PoundStatus.NOT;
 
-    internal Vector3 hitNormal;
     internal Vector3 move;
     internal Vector3 unfilteredMove;
 
+    [Obsolete("This will be removed later.")]
     public bool onGround()
     {
+
+        return grounded;
+
         /* We determine if the character is on ground by checking if
          1, the capsule cast below collides with *something*,
          2, the angle of the slope is within the acceptable margin
          In case we were not on a slope and we're, indeed, floating somewhere
          we slide down said slope later in the code.
         */
-
-        return grounded;
-
-        /* return (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit) && Physics.CheckCapsule(GetComponent<Collider>().bounds.center,
-            new Vector3(GetComponent<Collider>().bounds.center.x,
-            GetComponent<Collider>().bounds.min.y - collidersep, GetComponent<Collider>().bounds.center.z),
-             0.72f); */
     }
 
     void OnCollisionStay(Collision hit)
     {
+        //Update checkpoint if we hit a checkpoint
         if (hit.gameObject.tag == "Checkpoint")
         {
             checkpoint = transform.position;
         }
-        else 
-        {
 
-        }
-
-
-        //Determine the direction the slope is going to
+        //If we collide with an object that hurts us
         if (hit.gameObject.tag == "Hurt" && hurtStatus == HurtStatus.ALIVE && invinciTimer >= invinciTimerLimit)
         {
             Hurt();
         }
-
-        
-        //hitNormal = hit.normal;
-        //acceptableSlope = (Vector3.Angle(Vector3.up, hitNormal) <= _controller.slopeLimit);
-
-        
-        
     }
 
     public void OnDrawGizmos()
@@ -216,7 +193,7 @@ public class PlayerBase : MonoBehaviour
     {
         //Set Animator parameters
         anm.SetFloat("Speed", Vector3.ClampMagnitude(move, 1).magnitude * (spd/10));
-        anm.SetBool("isGrounded", onGround() || staircased);
+        anm.SetBool("isGrounded", grounded || staircased);
         anm.SetFloat("vertMomentum", gravVel.y);
         anm.SetBool("isWalking", walking);
         anm.SetInteger("hurtStatus", (int)hurtStatus);
@@ -229,10 +206,10 @@ public class PlayerBase : MonoBehaviour
 
     public void UpdatePhysics()
     {
-        //here it is
+        //Gravity accel
         gravVel.y += Physics.gravity.y * 2 * Time.deltaTime;
 
-        //Restore gravity if grounded
+        //Restore gravity accel if grounded
         if (((grounded || staircased) && !rayHitsGround)
             && gravVel.y < 0)
         {
@@ -258,6 +235,7 @@ public class PlayerBase : MonoBehaviour
         gravVel.y = (jheight * Physics.gravity.y * -2);
     }
 
+    //TODO: Merge this in the Jump function by making the denominator a variable
     public void JumpSmall()
     {
         gravVel.y = ((jheight/2) * Physics.gravity.y * -2);
@@ -267,23 +245,24 @@ public class PlayerBase : MonoBehaviour
     {
         if (!_npc)
         {
+            //If dead, and pressed A (Only available until a proper menu is made)
             if (Input.GetButtonDown("Interact") && hurtStatus == HurtStatus.DEAD)
             {
                 Necromancy(false);
                 Respawn(false, false);
             }
 
-            //Control Jumping
-            if (Input.GetButtonDown("Jump") && (onGround() || staircased))
+            //Jumping
+            if (Input.GetButtonDown("Jump") && (grounded || staircased))
             {
                 Jump();
             }
 
-            if (Input.GetButton("Run") && (onGround() || staircased))
+            if (Input.GetButton("Run") && (grounded || staircased))
             {
                 spd = Mathf.SmoothDamp(spd, maxSpd, ref currSpd, 0.1f);
             }
-            else if (!Input.GetButton("Run") && !(onGround() || staircased))
+            else if (!Input.GetButton("Run") && !(grounded || staircased))
             {
                 spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 2f);
             }
@@ -292,7 +271,9 @@ public class PlayerBase : MonoBehaviour
                 spd = Mathf.SmoothDamp(spd, baseSpd, ref currSpd, 0.1f);
             }
 
-            if (Input.GetButtonDown("Pound") && !(onGround() || staircased) && poundPhase == PoundStatus.NOT)
+
+            //Groundpound
+            if (Input.GetButtonDown("Pound") && !(grounded || staircased) && poundPhase == PoundStatus.NOT)
             {
                 anm.SetBool("isPounding", true);
                 move = Vector3.zero;
@@ -302,7 +283,8 @@ public class PlayerBase : MonoBehaviour
                 poundTimer = 0;
             }
 
-            if (Input.GetButtonDown("Interact") && (onGround() || staircased))
+            //Interact with NPCs/items
+            if (Input.GetButtonDown("Interact") && (grounded || staircased))
             {
                 GameObject interactable = checkInteraction();
                 if (interactable != null)
@@ -311,7 +293,8 @@ public class PlayerBase : MonoBehaviour
                 }
             }
 
-            if (Input.GetButtonDown("Taunt") && (onGround() || staircased))
+            //Taunting
+            if (Input.GetButtonDown("Taunt") && (grounded || staircased))
             {
                 anm.Play("Taunt");
             }
@@ -354,15 +337,9 @@ public class PlayerBase : MonoBehaviour
 
     public virtual void Move()
     {
-        /* Here's what happens if we're not grounded: our movement will be governed by the slope we're
-        supposedly standing on
-        if (!onGround() && !acceptableSlope)
-        {
-            move.x += (1f - hitNormal.y) * hitNormal.x * (slopeSpd - slopeFrc);
-            move.z += (1f - hitNormal.y) * hitNormal.z * (slopeSpd - slopeFrc);
-        }
-        Disabling this for now
-        I really don't want to deal with this and so far it will not be necessary for me.
+        /* 
+         * 
+         * TODO: Slope slide logic
         */
 
         //Now we move
@@ -435,7 +412,7 @@ public class PlayerBase : MonoBehaviour
 
     public void Hurt()
     {
-        if (HP > 1)
+        if (_hp > 1)
         {
             asrc.PlayOneShot(audioClips[0], 0.7f);
             Camera.main.GetComponent<CharacterCam>().setShake(20, 0.4f, 0.8f, Shaker.ShakeStyle.Y);
@@ -501,7 +478,7 @@ public class PlayerBase : MonoBehaviour
         {
             Hurt();
         }
-        _controller.enabled = false;
+        _controller.enabled = false; //Disable Controller for a bit to allow warping
         if (atCheckpoint)
         {
            
@@ -511,7 +488,7 @@ public class PlayerBase : MonoBehaviour
         {
             transform.position = spawnpoint;
         }
-        _controller.enabled = true;
+        _controller.enabled = true; //Re-enable Controller
     }
 
     public virtual void checkGrounded()
@@ -543,23 +520,12 @@ public class PlayerBase : MonoBehaviour
             poundPhase = PoundStatus.FALLING;
         }
 
-        if (poundPhase == PoundStatus.FALLING && (onGround() || staircased))
+        if (poundPhase == PoundStatus.FALLING && (grounded || staircased))
         {
             asrc.PlayOneShot(audioClips[3], 0.5f);
             poundPhase = PoundStatus.NOT;
             anm.SetBool("isPounding", false);
             Camera.main.GetComponent<CharacterCam>().setShake(14, 0.2f, 0.89f, Shaker.ShakeStyle.Y, true);
         }
-
-        /*if (Physics.Raycast(GetComponent<Collider>().bounds.center, Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f))
-        {
-            staircased = true;
-        }
-        else
-        {
-            staircased = false;
-        }*/
-
-        
     }
 }

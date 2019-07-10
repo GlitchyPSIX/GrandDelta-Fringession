@@ -1,8 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.UI;
-using UnityEngine;
-using System.Text;
 
 public class DialogTypewriter : Typewriter
 {
@@ -23,8 +20,6 @@ public class DialogTypewriter : Typewriter
         fulltext = visibleText.text;
         visibleText.text = currenttext;
     }
-
-
 
     public void blankTypewriter()
     {

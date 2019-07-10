@@ -10,9 +10,6 @@ public class DeltaController : PlayerBase
         _controller = GetComponent<CharacterController>();
         BaseSpeed = 10;
         MaxSpeed = 30;
-        SlopeFriction = 2;
-        SlopeSlideSpeed = 6;
-        ColliderSeparation = 0;
         JumpHeight = 0.8f;
     }
 
