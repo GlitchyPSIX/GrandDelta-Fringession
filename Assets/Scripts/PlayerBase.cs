@@ -42,7 +42,6 @@ public class PlayerBase : MonoBehaviour
     public int HP { get { return _hp; } private set { } }
     public int MaxHP { get; set; }
 
-    private bool acceptableSlope;
     protected bool grounded;
     protected bool staircased;
     protected bool rayHitsGround;
@@ -75,9 +74,9 @@ public class PlayerBase : MonoBehaviour
 
     public bool NPC { get => _npc; set => _npc = value; }
 
-    public enum PoundStatus
+    public enum AirStatus
     {
-        NOT, PREPARE, FALLING
+        GROUND, GP_PREPARE, GP_FALLING, MIDAIR
     }
 
     public enum TauntStatus
@@ -92,7 +91,7 @@ public class PlayerBase : MonoBehaviour
 
     TauntStatus tauntStatus = TauntStatus.NONE;
     HurtStatus hurtStatus = HurtStatus.ALIVE;
-    PoundStatus poundPhase = PoundStatus.NOT;
+    AirStatus poundPhase = AirStatus.GROUND;
 
     internal Vector3 move;
     internal Vector3 unfilteredMove;
@@ -150,7 +149,7 @@ public class PlayerBase : MonoBehaviour
         Vector3 moveZ_pure = pureHorz * Camera.main.transform.right;
         Vector3 moveX_pure = pureVert * Camera.main.transform.forward;
 
-        if (poundPhase == PoundStatus.NOT && hurtStatus != HurtStatus.DEAD)
+        if (poundPhase == AirStatus.GROUND && hurtStatus != HurtStatus.DEAD)
         {
             if (useExternal == false)
             {
@@ -181,6 +180,12 @@ public class PlayerBase : MonoBehaviour
             //Angle which we're pointing at
             angl = Mathf.Rad2Deg * Mathf.Atan2(move.x, move.z);
             rot = Quaternion.Euler(0, angl, 0);
+        }
+        else if (poundPhase == AirStatus.MIDAIR && hurtStatus != HurtStatus.DEAD)
+        {
+            move = Vector3.ClampMagnitude(move + ((movex+movez)*0.05f), baseSpd/8);
+            move = new Vector3(move.x, 0, move.z);
+
         }
         else
         {
@@ -213,13 +218,13 @@ public class PlayerBase : MonoBehaviour
         if (((grounded || staircased) && !rayHitsGround)
             && gravVel.y < 0)
         {
-            gravVel.y = 0;         
+            gravVel.y = 0;
         }
 
         //Gravity goes before any other movement
         if (hurtStatus != HurtStatus.DEAD)
         {
-            if (poundPhase != PoundStatus.PREPARE)
+            if (poundPhase != AirStatus.GP_PREPARE)
             {
                 _controller.Move(gravVel * Time.deltaTime);
             }
@@ -230,15 +235,10 @@ public class PlayerBase : MonoBehaviour
         }
     }
 
-    public void Jump()
+    public void Jump(float multiplier = 1f)
     {
-        gravVel.y = (jheight * Physics.gravity.y * -2);
-    }
-
-    //TODO: Merge this in the Jump function by making the denominator a variable
-    public void JumpSmall()
-    {
-        gravVel.y = ((jheight/2) * Physics.gravity.y * -2);
+        poundPhase = AirStatus.MIDAIR;
+        gravVel.y = (jheight * multiplier * Physics.gravity.y * -2);
     }
 
     public void InputHandle()
@@ -258,6 +258,7 @@ public class PlayerBase : MonoBehaviour
                 Jump();
             }
 
+            //Running
             if (Input.GetButton("Run") && (grounded || staircased))
             {
                 spd = Mathf.SmoothDamp(spd, maxSpd, ref currSpd, 0.1f);
@@ -273,13 +274,13 @@ public class PlayerBase : MonoBehaviour
 
 
             //Groundpound
-            if (Input.GetButtonDown("Pound") && !(grounded || staircased) && poundPhase == PoundStatus.NOT)
+            if (Input.GetButtonDown("Pound") && (!(grounded || staircased) || poundPhase == AirStatus.MIDAIR))
             {
                 anm.SetBool("isPounding", true);
                 move = Vector3.zero;
                 gravVel = Vector3.zero;
                 anm.Play("Groundpound");
-                poundPhase = PoundStatus.PREPARE;
+                poundPhase = AirStatus.GP_PREPARE;
                 poundTimer = 0;
             }
 
@@ -299,8 +300,8 @@ public class PlayerBase : MonoBehaviour
                 anm.Play("Taunt");
             }
 
-            //If we're touching any axis
-            if (unfilteredMove.magnitude != 0)
+            //If we're touching any axis and we're in the ground
+            if (unfilteredMove.magnitude != 0 && poundPhase == AirStatus.GROUND)
             {
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, Vector3.ClampMagnitude(unfilteredMove, 1).magnitude * 13);
                 walking = true;
@@ -343,9 +344,10 @@ public class PlayerBase : MonoBehaviour
         */
 
         //Now we move
-        if (poundPhase != PoundStatus.PREPARE && hurtStatus != HurtStatus.DEAD)
+        if (poundPhase != AirStatus.GP_PREPARE && hurtStatus != HurtStatus.DEAD)
         {
             _controller.Move(move * Time.deltaTime * spd);
+            Debug.Log(move);
         }
         checkGrounded();
     }
@@ -393,9 +395,9 @@ public class PlayerBase : MonoBehaviour
             InputHandle();
         }
         
-        UpdateAnimatorParameters();
         UpdatePhysics();
         Move();
+        UpdateAnimatorParameters();
         checkInteraction();
     }
 
@@ -419,7 +421,7 @@ public class PlayerBase : MonoBehaviour
             anm.Play("Hurt");
             move = -move;
             Debug.Log("Hurt!");
-            JumpSmall();
+            Jump(0.5f);
             hurtStatus = HurtStatus.HURT;
             invinciTimer = 0;
             interactionTimer = 0;
@@ -493,6 +495,7 @@ public class PlayerBase : MonoBehaviour
 
     public virtual void checkGrounded()
     {
+
         if (gravVel.y <= 0)
         {
             grounded = Physics.CheckSphere(new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y, GetComponent<Collider>().bounds.center.z), 0.10f, ~(1 << 10), QueryTriggerInteraction.Ignore);
@@ -500,12 +503,15 @@ public class PlayerBase : MonoBehaviour
             if (Physics.CheckSphere(new Vector3(GetComponent<Collider>().bounds.center.x, GetComponent<Collider>().bounds.min.y, GetComponent<Collider>().bounds.center.z), 0.45f, ~(1 << 10), QueryTriggerInteraction.Ignore))
             {
                 staircased = true;
+                if (poundPhase != AirStatus.GP_FALLING)
+                {
+                    poundPhase = AirStatus.GROUND;
+                }
             }
             else
             {
                 staircased = false;
             }
-
             rayHitsGround = (Physics.Raycast(GetComponent<Collider>().bounds.center,
                 Vector3.down * (_raycastDistance * 1.7f), out rayhit_s, _raycastDistance * 1.5f));
         }
@@ -515,17 +521,18 @@ public class PlayerBase : MonoBehaviour
             staircased = false;
         }
 
-        if (poundTimer >= poundTimerLimit && poundPhase == PoundStatus.PREPARE)
+        if (poundTimer >= poundTimerLimit && poundPhase == AirStatus.GP_PREPARE)
         {
-            poundPhase = PoundStatus.FALLING;
+            poundPhase = AirStatus.GP_FALLING;
         }
 
-        if (poundPhase == PoundStatus.FALLING && (grounded || staircased))
+        if (poundPhase == AirStatus.GP_FALLING && (grounded || staircased || rayHitsGround))
         {
             asrc.PlayOneShot(audioClips[3], 0.5f);
-            poundPhase = PoundStatus.NOT;
+            poundPhase = AirStatus.GROUND;
             anm.SetBool("isPounding", false);
             Camera.main.GetComponent<CharacterCam>().setShake(14, 0.2f, 0.89f, Shaker.ShakeStyle.Y, true);
         }
+
     }
 }
