@@ -20,14 +20,6 @@ public class PlayerBase : MonoBehaviour
     private Vector3 checkpoint;
     protected Vector3 spawnpoint;
 
-    /*
-    private float slopeFrc;
-    public float SlopeFriction { get { return slopeFrc; } set { slopeFrc = value; } }
-
-    private float slopeSpd;
-    public float SlopeSlideSpeed { get { return slopeSpd; } set { slopeSpd = value; } }
-    */
-
     private float currSpd;
     private float spd;
     public float Speed { get { return spd; } private set { } }

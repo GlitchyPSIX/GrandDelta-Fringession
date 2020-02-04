@@ -22,7 +22,7 @@ public class Healthbar : MonoBehaviour
     {
         _healthImg = GetComponent<Image>();
         animator = GetComponent<Animator>();
-        player = FindObjectOfType<PlayerBase>().gameObject;
+        player = this.gameObject; //FindObjectOfType<PlayerBase>().gameObject;
     }
 
     // Update is called once per frame

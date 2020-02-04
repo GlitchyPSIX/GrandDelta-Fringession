@@ -93,6 +93,7 @@ ModelImporter:
     13700006: Right_Arm
     13700008: Right_Foot
     13700010: Torso
+    2186277476908879412: ImportLogs
   externalObjects:
   - first:
       type: UnityEngine:Material
